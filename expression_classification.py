@@ -9,7 +9,7 @@ import keras
 from keras.models import Sequential,Model
 from keras.layers import Dense, Dropout, Flatten,Merge,Input
 from keras.layers import Conv2D, MaxPooling2D,AveragePooling2D
-from keras.callbacks import ReduceLROnPlateau,EarlyStopping,TensorBoard
+from keras.callbacks import TensorBoard,ModelCheckpoint
 from keras.regularizers import l2
 from keras.preprocessing.image import ImageDataGenerator
 
@@ -190,12 +190,14 @@ def deeplearning(x_train,y_train,x_test,y_test,num_of_classes,batch_size,epochs)
     datagen.fit(x_train)
     dataset = datagen.flow(x_train,y_train,batch_size=batch_size)
 
+    checkpointer = ModelCheckpoint(filepath='weights_optimized.hdf5', verbose=1, save_best_only=True)
+
     model.fit_generator(dataset,
                         steps_per_epoch=x_train.shape[0] // batch_size,
                         validation_data=(x_test, y_test),
                         epochs=epochs,
                         verbose=1,
-                        callbacks=[visualize])
+                        callbacks=[visualize,checkpointer])
 
     model.evaluate(x_test, y_test, verbose=2)
 
@@ -220,7 +222,7 @@ if __name__== "__main__":
     channels = 1
 
     batch_size = 100
-    epochs = 200
+    epochs = 250
 
     loadData = LoadData(emotion_folder,pic_folder)
     train_images, train_labels, test_images, test_labels = loadData.read_data(train_ratio)
