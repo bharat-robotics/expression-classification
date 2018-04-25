@@ -3,13 +3,12 @@ from __future__ import print_function
 
 from data import LoadData
 
-
 import os
 
 import keras
 from keras.models import Sequential,Model
 from keras.layers import Dense, Dropout, Flatten,Merge,Input
-from keras.layers import Conv2D, MaxPooling2D,AveragePooling2D,BatchNormalization
+from keras.layers import Conv2D, MaxPooling2D,AveragePooling2D
 from keras.callbacks import ReduceLROnPlateau,EarlyStopping,TensorBoard
 from keras.regularizers import l2
 from keras.preprocessing.image import ImageDataGenerator
@@ -174,8 +173,6 @@ def deeplearning(x_train,y_train,x_test,y_test,num_of_classes,batch_size,epochs)
     visualize = TensorBoard(log_dir='./Graph', histogram_freq=1,
                                             write_graph=True, write_images=True)
 
-    stopping_callback = EarlyStopping(min_delta=0.00001, patience=10,verbose=0,mode='auto')
-    lr_reducer = ReduceLROnPlateau(factor=0.1, cooldown=0, patience=10, min_lr=0.5e-6)
 
     datagen = ImageDataGenerator(
         featurewise_center=False,
@@ -198,7 +195,7 @@ def deeplearning(x_train,y_train,x_test,y_test,num_of_classes,batch_size,epochs)
                         validation_data=(x_test, y_test),
                         epochs=epochs,
                         verbose=1,
-                        callbacks=[visualize,stopping_callback,lr_reducer])
+                        callbacks=[visualize])
 
     model.evaluate(x_test, y_test, verbose=2)
 
