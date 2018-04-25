@@ -220,7 +220,7 @@ if __name__== "__main__":
     channels = 1
 
     batch_size = 100
-    epochs = 400
+    epochs = 200
 
     loadData = LoadData(emotion_folder,pic_folder)
     train_images, train_labels, test_images, test_labels = loadData.read_data(train_ratio)
