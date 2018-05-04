@@ -4,9 +4,11 @@ from __future__ import print_function
 from data import LoadData
 
 import os
+import cv2
+import numpy as np
 
 import keras
-from keras.models import Sequential,Model
+from keras.models import Sequential,Model,model_from_json
 from keras.layers import Dense, Dropout, Flatten,Merge,Input
 from keras.layers import Conv2D, MaxPooling2D,AveragePooling2D
 from keras.callbacks import TensorBoard,ModelCheckpoint
@@ -210,6 +212,39 @@ def deeplearning(x_train,y_train,x_test,y_test,num_of_classes,batch_size,epochs)
     print("Saved model to disk")
 
 
+def use_models():
+    json_file = open('model.json', 'r')
+    loaded_model_json = json_file.read()
+    json_file.close()
+    loaded_model = model_from_json(loaded_model_json)
+
+    loaded_model.load_weights("saved_values/weights_optimized.hdf5")
+
+    img = cv2.imread('/home/cokcybot/test4.jpg', cv2.IMREAD_GRAYSCALE)
+    res = cv2.resize(img, (224, 224), interpolation=cv2.INTER_CUBIC)
+    test = np.array(res)
+    x_test = test.astype('float32')
+    x_test /= 255
+    x_test = x_test.reshape(1,img_rows,img_cols,1)
+
+    emotion = np.array([5])
+    y_test = np.array(keras.utils.to_categorical(emotion, 8))
+
+    sgd = keras.optimizers.SGD(lr=0.02, momentum=0.9, decay=0.0001, nesterov=False)
+
+    loaded_model.compile(loss=['categorical_crossentropy'],
+                  optimizer=sgd,
+                  metrics=['accuracy'])
+    score = loaded_model.evaluate(x_test,y_test)
+    print('Test loss:', score[0])
+    print('Test accuracy:', score[1])
+
+    pred = loaded_model.predict(x_test)
+    print('network output: \n {}\n'.format(pred))
+    print('prediction: {}'.format(np.argmax(pred, axis=1)))
+    print('\n' * 3)
+    cv2.imwrite('/home/cokcybot/test_happy2.jpg',img)
+
 if __name__== "__main__":
     emotion_folder = '/home/cokcybot/Expression-Classification/Emotion'
     pic_folder = '/home/cokcybot/Expression-Classification/cohn-kanade-images'
@@ -222,7 +257,7 @@ if __name__== "__main__":
     channels = 1
 
     batch_size = 100
-    epochs = 250
+    epochs = 500
 
     loadData = LoadData(emotion_folder,pic_folder)
     train_images, train_labels, test_images, test_labels = loadData.read_data(train_ratio)
@@ -234,4 +269,5 @@ if __name__== "__main__":
     x_test = x_test.reshape(x_test.shape[0],img_rows,img_cols,channels)
 
     deeplearning(x_train,y_train,x_test,y_test,num_of_classes,batch_size,epochs)
+    use_models()
 
